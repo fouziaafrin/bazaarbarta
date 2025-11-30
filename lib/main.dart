@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:bazaarbarta/screens/login_screen.dart';
 import 'package:bazaarbarta/screens/phone_login.dart';
 import 'package:bazaarbarta/screens/otp_verify.dart';
-import 'package:bazaarbarta/services/language_service.dart';
 import 'package:bazaarbarta/screens/home_screen.dart';
+import 'package:bazaarbarta/services/language_service.dart';
+import 'package:bazaarbarta/services/firestore_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseFirestore.instance.settings =
+    const Settings(persistenceEnabled: true);
+
 
   runApp(
     EasyLocalization(
