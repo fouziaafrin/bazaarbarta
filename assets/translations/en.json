@@ -1,5 +1,13 @@
 {
   "welcome": "Welcome to BazaarBarta",
-  "phone_hint": "Enter your phone number",
-  "send_otp": "Send OTP"
+  "appTitle": "BazaarBarta",
+  "phone_hint": "Enter your phone number (e.g. 017XXXXXXXX)",
+  "send_otp": "Send OTP",
+  "enter_otp": "Enter OTP",
+  "verify_otp": "Verify OTP",
+  "invalid_phone": "Please enter a valid phone number",
+  "otp_sent": "OTP sent",
+  "otp_failed": "OTP send failed: {}",
+  "invalid_otp": "Invalid OTP",
+  "logging_in": "Logging in..."
 }
