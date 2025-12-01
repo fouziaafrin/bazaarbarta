@@ -1,59 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:provider/provider.dart';
-import 'package:bazaarbarta/screens/phone_login.dart';
-import 'package:bazaarbarta/screens/home_screen.dart';
-import 'package:bazaarbarta/screens/add_item_screen.dart';
-import 'package:bazaarbarta/screens/marketplace_screen.dart';
-import 'package:bazaarbarta/services/language_service.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'screens/role_selection.dart';
+import 'screens/login.dart';
+import 'screens/farmer_dashboard.dart';
+import 'screens/buyer_dashboard.dart';
+import 'screens/admin_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseFirestore.instance.settings =
-    const Settings(persistenceEnabled: true);
-
-
-  runApp(
-    EasyLocalization(
-      supportedLocales: [Locale('en'), Locale('bn')],
-      path: 'assets/translations',
-      fallbackLocale: Locale('en'),
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => LanguageService()),
-        ],
-        child: BazaarBartaApp(),
-      ),
-    ),
-  );
+  runApp(const MyApp());
 }
 
-class BazaarBartaApp extends StatelessWidget {
-  const BazaarBartaApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'BazaarBarta',
       debugShowCheckedModeBanner: false,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      //home: LoginScreen(),
-      home: FirebaseAuth.instance.currentUser == null ? const PhoneLogin() : const HomeScreen(),
       routes: {
-        '/home': (_) => const HomeScreen(),
-        '/market': (context) => const MarketplaceScreen(),
-        '/addItem': (context) => const AddItemScreen(),
+        '/': (context) => const RoleSelection(),
+        '/login': (context) => const LoginScreen(),
+        '/farmer_dashboard': (context) => const FarmerDashboard(),
+        '/buyer_dashboard': (context) => const BuyerDashboard(),
+        '/admin_dashboard': (context) => const AdminDashboard(),
       },
-      //home: PhoneLogin(),
-
+      initialRoute: '/',
     );
   }
 }
