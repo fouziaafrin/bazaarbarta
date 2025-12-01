@@ -6,7 +6,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:bazaarbarta/screens/phone_login.dart';
 import 'package:bazaarbarta/screens/home_screen.dart';
+import 'package:bazaarbarta/screens/add_item_screen.dart';
+import 'package:bazaarbarta/screens/marketplace_screen.dart';
 import 'package:bazaarbarta/services/language_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +49,8 @@ class BazaarBartaApp extends StatelessWidget {
       home: FirebaseAuth.instance.currentUser == null ? const PhoneLogin() : const HomeScreen(),
       routes: {
         '/home': (_) => const HomeScreen(),
+        '/market': (context) => const MarketplaceScreen(),
+        '/addItem': (context) => const AddItemScreen(),
       },
       //home: PhoneLogin(),
 

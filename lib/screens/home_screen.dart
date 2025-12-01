@@ -4,6 +4,8 @@ import '../services/language_service.dart';
 import '../services/firestore_service.dart';
 import '../services/cache_service.dart';
 import '../services/network_service.dart';
+import '../screens/marketplace_screen.dart';
+import '../screens/market_prices_tab.dart';
 import '../widgets/crop_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,115 +16,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>>? cachedData;
-  bool offline = false;
-  int? lastUpdated;
+  int _selectedIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    loadCached();
-    loadOnlineData(); // initial fetch
-  }
+  final List<Widget> _screens = [
+    const MarketPricesTab(),  // your existing crop list logic
+    const MarketplaceScreen(), // your marketplace screen
+  ];
 
-  Future<void> loadCached() async {
-    cachedData = await CacheService().loadCrops();
-    lastUpdated = await CacheService().getLastUpdated();
-    setState(() {});
-  }
-
-  /// Manual refresh only when user pulls
-  Future<void> manualRefresh() async {
-    final online = await NetworkService.isOnline();
-    if (!online) {
-      offline = true;
-      setState(() {});
-      return;
-    }
-
-    final crops = await FirestoreService().getLatestCrops(); // one-time fetch variant needed
-    await CacheService().saveCrops(crops);
-
-    cachedData = crops;
-    offline = false;
-    lastUpdated = DateTime.now().millisecondsSinceEpoch;
-
-    setState(() {});
-  }
-
-  /// Background stream (initial async update)
-  Future<void> loadOnlineData() async {
-    final online = await NetworkService.isOnline();
-    if (!online) {
-      offline = true;
-      setState(() {});
-      return;
-    }
-
-    FirestoreService().getCropsStream().listen((crops) async {
-      await CacheService().saveCrops(crops);
-      cachedData = crops;
-      offline = false;
-      lastUpdated = DateTime.now().millisecondsSinceEpoch;
-      setState(() {});
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final lang = context.watch<LanguageService>().lang;
-    final t = context.watch<LanguageService>().text;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t['marketPrices']!),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (v) => context.read<LanguageService>().switchLang(v),
-            itemBuilder: (context) => [
-              PopupMenuItem(value: "en", child: Text(t['english']!)),
-              PopupMenuItem(value: "bn", child: Text(t['bangla']!)),
-            ],
-          ),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.show_chart), label: 'Prices'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Marketplace'),
         ],
       ),
-
-      body: cachedData == null
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                if (offline)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red.shade300,
-                    child: Text(t['offlineMode']!, style: const TextStyle(color: Colors.white)),
-                  ),
-
-                if (lastUpdated != null)
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text("${t['lastUpdated']}: ${DateTime.fromMillisecondsSinceEpoch(lastUpdated!).toLocal()}"),
-                  ),
-
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: manualRefresh,
-                    child: ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: cachedData!.length,
-                      itemBuilder: (_, i) {
-                        final c = cachedData![i];
-                        return CropCard(
-                          name: lang == "en" ? c['name_en'] : c['name_bn'],
-                          price: "${c['price']} ৳",
-                          unit: "per ${c['unit']}",
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }
+
