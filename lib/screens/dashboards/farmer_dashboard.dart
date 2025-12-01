@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'add_crop_screen.dart';
 import 'crop_list_screen.dart';
+import 'crop_details_screen.dart';
+import 'buyer_requests_screen.dart';
 import '../../services/a_service.dart';
 import '../home_screen.dart';
 
@@ -52,6 +54,15 @@ class FarmerDashboard extends StatelessWidget {
               label: Text("My Crops"),
               style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
             ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => BuyerRequestsScreen()));
+              },
+              icon: Icon(Icons.shopping_cart),
+              label: Text("Buyer Requests"),
+              style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
+            ),
+
           ],
         ),
       ),
@@ -64,13 +75,12 @@ class FarmerDashboard extends StatelessWidget {
       color: color,
       child: Container(
         width: 150,
-        height: 100,
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: TextStyle(color: Colors.white, fontSize: 16)),
-            Spacer(),
+            SizedBox(height: 12),
             Text(value, style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
           ],
         ),
