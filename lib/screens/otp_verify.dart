@@ -26,7 +26,7 @@ class _OtpVerifyState extends State<OtpVerify> {
       await AuthService.verifyOtp(verificationId: widget.verificationId, smsCode: code);
       setState(() => _verifying = false);
       Navigator.of(context).pushReplacementNamed('/home');
-    } on Exception catch (e) {
+    } on Exception {
       setState(() => _verifying = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('invalid_otp'.tr())));
     }

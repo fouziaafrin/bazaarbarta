@@ -26,15 +26,15 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
   String phone;
   if (digits.startsWith('0')) {
-    phone = '+88' + digits.substring(1); // 01234567890 -> +8801234567890
+    phone = '+88${digits.substring(1)}'; // 01234567890 -> +8801234567890
   } else if (digits.length == 10) {
-    phone = '+88' + digits; // 1234567890 -> +881234567890
+    phone = '+88$digits'; // 1234567890 -> +881234567890
   } else if (digits.startsWith('88')) {
-    phone = '+' + digits; // 8801234567890 -> +8801234567890
+    phone = '+$digits'; // 8801234567890 -> +8801234567890
   } else if (digits.startsWith('1')) {
-    phone = '+88' + digits; // 1712345678 -> +881712345678
+    phone = '+88$digits'; // 1712345678 -> +881712345678
   } else {
-    phone = '+88' + digits; // fallback
+    phone = '+88$digits'; // fallback
   }
 
   setState(() => _sending = true);

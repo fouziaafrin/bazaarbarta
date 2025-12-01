@@ -6,6 +6,7 @@ class AppStrings {
     'bangla': 'Bangla',
     'english': 'English',
     'pullToRefresh': 'Pull to refresh',
+    'lastUpdated': 'Last Updated',
   };
 
   static const bn = {
@@ -15,5 +16,6 @@ class AppStrings {
     'bangla': 'বাংলা',
     'english': 'ইংরেজি',
     'pullToRefresh': 'রিফ্রেশ করতে টানুন',
+    'lastUpdated': 'Last Updated',
   };
 }
