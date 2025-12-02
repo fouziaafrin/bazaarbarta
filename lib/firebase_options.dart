@@ -17,17 +17,29 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,47 +52,11 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD88ovrKXbkFGpQqPikqVdnEYay1P76ba0',
-    appId: '1:271987412724:web:29b5e2bf32c2e8d05598a1',
-    messagingSenderId: '271987412724',
-    projectId: 'bazaarbarta-ec1a3',
-    authDomain: 'bazaarbarta-ec1a3.firebaseapp.com',
-    storageBucket: 'bazaarbarta-ec1a3.firebasestorage.app',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDct-xCWbeBnzSGhyP0kG5rFEQu8gmQPSU',
-    appId: '1:271987412724:android:7e946c031b0766725598a1',
-    messagingSenderId: '271987412724',
-    projectId: 'bazaarbarta-ec1a3',
-    storageBucket: 'bazaarbarta-ec1a3.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBxf2KsLCD9eW0ssenALhenNbIHJKYFz5o',
-    appId: '1:271987412724:ios:622817021b01f6d85598a1',
-    messagingSenderId: '271987412724',
-    projectId: 'bazaarbarta-ec1a3',
-    storageBucket: 'bazaarbarta-ec1a3.firebasestorage.app',
-    iosBundleId: 'com.example.bazaarbarta',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBxf2KsLCD9eW0ssenALhenNbIHJKYFz5o',
-    appId: '1:271987412724:ios:622817021b01f6d85598a1',
-    messagingSenderId: '271987412724',
-    projectId: 'bazaarbarta-ec1a3',
-    storageBucket: 'bazaarbarta-ec1a3.firebasestorage.app',
-    iosBundleId: 'com.example.bazaarbarta',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD88ovrKXbkFGpQqPikqVdnEYay1P76ba0',
-    appId: '1:271987412724:web:489a2bc80f1ee6375598a1',
-    messagingSenderId: '271987412724',
-    projectId: 'bazaarbarta-ec1a3',
-    authDomain: 'bazaarbarta-ec1a3.firebaseapp.com',
-    storageBucket: 'bazaarbarta-ec1a3.firebasestorage.app',
+    apiKey: 'AIzaSyAyew6NGi1OIFPGfNzodLT2g0pGTPfOjNk',
+    appId: '1:445069568482:android:a6e668f56b4d704b71b1bb',
+    messagingSenderId: '445069568482',
+    projectId: 'bazaarbarta-d0ff3',
+    storageBucket: 'bazaarbarta-d0ff3.firebasestorage.app',
   );
 }

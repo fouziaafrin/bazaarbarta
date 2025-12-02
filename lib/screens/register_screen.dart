@@ -1,123 +1,215 @@
 import 'package:flutter/material.dart';
 import '../services/a_service.dart';
 import 'login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class RegisterScreen extends StatefulWidget {
+
+class RegisterPage extends StatefulWidget {
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final nameController = TextEditingController();
-  String role = 'farmer';
-  bool loading = false;
-  bool hidePassword = true;
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  String _selectedRole = 'farmer';
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedRole == 'admin') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Admin accounts cannot be created through registration.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'role': _selectedRole,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration successful! Please log in.'), backgroundColor: Colors.green),
+      );
+
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    } on FirebaseAuthException catch (e) {
+      String message = 'Registration failed. Please try again.';
+      if (e.code == 'weak-password') {
+        message = 'The password is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        message = 'An account already exists for this email.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format.';
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred. Please try again.'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Register")),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                children: [
-                  TextFormField(
-                    controller: nameController,
-                    decoration: InputDecoration(labelText: "Full Name"),
-                    validator: (v) => v!.isEmpty ? "Enter name" : null,
+      appBar: AppBar(title: Text('Register'), backgroundColor: Colors.green.shade700),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: 20),
+                Icon(Icons.person_add, size: 80, color: Colors.green.shade700),
+                SizedBox(height: 24),
+                Text(
+                  'Create Account',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green.shade800),
+                ),
+                SizedBox(height: 32),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: emailController,
-                    decoration: InputDecoration(labelText: "Email"),
-                    validator: (v) => v!.contains("@") ? null : "Invalid email",
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter your name';
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: passwordController,
-                    obscureText: hidePassword,
-                    decoration: InputDecoration(
-                      labelText: "Password",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          hidePassword ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () => setState(() => hidePassword = !hidePassword),
-                      ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter your email';
+                    if (!value.contains('@')) return 'Please enter a valid email';
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedRole,
+                  decoration: InputDecoration(
+                    labelText: 'Register as',
+                    prefixIcon: Icon(Icons.work),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  items: [
+                    DropdownMenuItem(value: 'farmer', child: Text('Farmer')),
+                    DropdownMenuItem(value: 'buyer', child: Text('Buyer')),
+                  ],
+                  onChanged: (value) => setState(() => _selectedRole = value!),
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    validator: (v) => v!.length < 6 ? "Password too short" : null,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: role,
-                    items: ['farmer', 'buyer']
-                        .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                        .toList(),
-                    onChanged: (val) => setState(() => role = val!),
-                    decoration: InputDecoration(labelText: "Role"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter a password';
+                    if (value.length < 6) return 'Password must be at least 6 characters';
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50)),
-                    onPressed: () async {
-                      if (!_formKey.currentState!.validate()) return;
-
-                      setState(() => loading = true);
-                      String? res = await AuthService().register(
-                        emailController.text.trim(),
-                        passwordController.text.trim(),
-                        nameController.text.trim(),
-                        role,
-                      );
-                      setState(() => loading = false);
-
-                      if (res == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Registration successful! Please login.")),
-                        );
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => LoginScreen()),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Error: $res")),
-                        );
-                      }
-                    },
-                    child: Text("Register"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please confirm your password';
+                    if (value != _passwordController.text) return 'Passwords do not match';
+                    return null;
+                  },
+                ),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => Navigator.pushReplacement(
-                        context, MaterialPageRoute(builder: (_) => LoginScreen())),
-                    child: Text("Already have an account? Login"),
-                  ),
-                  SizedBox(height: 30),
-                  Text(
-                    "© 2025 BazaarBarta",
-                    style: TextStyle(color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  )
-                ],
-              ),
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Register', style: TextStyle(fontSize: 18, color: Colors.white)),
+                ),
+                SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                  },
+                  child: Text('Already have an account? Log In'),
+                ),
+              ],
             ),
           ),
-          if (loading)
-            Container(
-              color: Colors.black54,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-        ],
+        ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 }
