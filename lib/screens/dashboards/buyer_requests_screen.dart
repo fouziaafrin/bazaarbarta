@@ -34,11 +34,11 @@ class BuyerRequestsScreen extends StatelessWidget {
                     children: [
                       IconButton(
                         icon: Icon(Icons.check, color: Colors.green),
-                        onPressed: () => updateOrderStatus(order.id, 'accepted', context),
+                        onPressed: () => updateOrderStatus(order.id, 'accepted', context, data['buyerId']),
                       ),
                       IconButton(
                         icon: Icon(Icons.close, color: Colors.red),
-                        onPressed: () => updateOrderStatus(order.id, 'declined', context),
+                        onPressed: () => updateOrderStatus(order.id, 'declined', context, data['buyerId']),
                       ),
                     ],
                   ),
@@ -51,8 +51,18 @@ class BuyerRequestsScreen extends StatelessWidget {
     );
   }
 
-  void updateOrderStatus(String orderId, String status, BuildContext context) async {
-    await firestore.collection('orders').doc(orderId).update({'status': status});
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Order $status")));
-  }
+  void updateOrderStatus(String orderId, String status, BuildContext context, String buyerId) async {
+  await firestore.collection('orders').doc(orderId).update({'status': status});
+
+  // Send notification to buyer
+  await firestore.collection('notifications').add({
+    'userId': buyerId,
+    'message': "Your order has been $status",
+    'read': false,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Order $status")));
+}
+
 }
