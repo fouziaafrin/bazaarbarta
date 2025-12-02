@@ -9,7 +9,7 @@ class ManageCropsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Manage Crops")),
       body: StreamBuilder<QuerySnapshot>(
-        stream: firestore.collection('crops').snapshots(),
+        stream: firestore.collection('crop').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
           final crops = snapshot.data!.docs;

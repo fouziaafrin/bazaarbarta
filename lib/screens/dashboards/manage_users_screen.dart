@@ -9,7 +9,7 @@ class ManageUsersScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Manage Users")),
       body: StreamBuilder<QuerySnapshot>(
-        stream: firestore.collection('users').snapshots(),
+        stream: firestore.collection('user').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
           final users = snapshot.data!.docs;

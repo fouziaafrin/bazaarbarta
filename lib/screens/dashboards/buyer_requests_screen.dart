@@ -24,21 +24,38 @@ class BuyerRequestsScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final order = orders[index];
               final data = order.data() as Map<String, dynamic>;
+              final buyerId = data['buyerId'];
+              final cropId = data['cropId'];
+
               return Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  title: Text("Buyer: ${data['buyerId']}"),
-                  subtitle: Text("Crop: ${data['cropId']} | Qty: ${data['quantity']}"),
+                  title: FutureBuilder<DocumentSnapshot>(
+                    future: firestore.collection('user').doc(buyerId).get(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return Text("Buyer: Loading...");
+                      final buyerData = snapshot.data!.data() as Map<String, dynamic>;
+                      return Text("Buyer: ${buyerData['name']}");
+                    },
+                  ),
+                  subtitle: FutureBuilder<DocumentSnapshot>(
+                    future: firestore.collection('crop').doc(cropId).get(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return Text("Crop: Loading...");
+                      final cropData = snapshot.data!.data() as Map<String, dynamic>;
+                      return Text("Crop: ${cropData['name']} | Qty: ${data['quantity']}");
+                    },
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: Icon(Icons.check, color: Colors.green),
-                        onPressed: () => updateOrderStatus(order.id, 'accepted', context, data['buyerId']),
+                        onPressed: () => updateOrderStatus(order.id, 'accepted', context, buyerId),
                       ),
                       IconButton(
                         icon: Icon(Icons.close, color: Colors.red),
-                        onPressed: () => updateOrderStatus(order.id, 'declined', context, data['buyerId']),
+                        onPressed: () => updateOrderStatus(order.id, 'declined', context, buyerId),
                       ),
                     ],
                   ),
@@ -46,6 +63,7 @@ class BuyerRequestsScreen extends StatelessWidget {
               );
             },
           );
+
         },
       ),
     );

@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'bazaarbarta-ec1a3.firebaseapp.com',
     storageBucket: 'bazaarbarta-ec1a3.firebasestorage.app',
   );
+
 }
