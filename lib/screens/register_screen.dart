@@ -9,57 +9,115 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final nameController = TextEditingController();
   String role = 'farmer';
   bool loading = false;
+  bool hidePassword = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Register")),
-      body: loading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(controller: nameController, decoration: InputDecoration(labelText: "Name")),
-                    TextFormField(controller: emailController, decoration: InputDecoration(labelText: "Email")),
-                    TextFormField(controller: passwordController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
-                    DropdownButtonFormField<String>(
-                      value: role,
-                      items: ['farmer', 'buyer'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-                      onChanged: (val) => setState(() => role = val!),
-                      decoration: InputDecoration(labelText: "Role"),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(labelText: "Full Name"),
+                    validator: (v) => v!.isEmpty ? "Enter name" : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(labelText: "Email"),
+                    validator: (v) => v!.contains("@") ? null : "Invalid email",
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: passwordController,
+                    obscureText: hidePassword,
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          hidePassword ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () => setState(() => hidePassword = !hidePassword),
+                      ),
                     ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () async {
-                        setState(() => loading = true);
-                        String? res = await AuthService().register(
-                          emailController.text.trim(),
-                          passwordController.text.trim(),
-                          nameController.text.trim(),
-                          role,
+                    validator: (v) => v!.length < 6 ? "Password too short" : null,
+                  ),
+                  SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: role,
+                    items: ['farmer', 'buyer']
+                        .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                        .toList(),
+                    onChanged: (val) => setState(() => role = val!),
+                    decoration: InputDecoration(labelText: "Role"),
+                  ),
+                  SizedBox(height: 24),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 50)),
+                    onPressed: () async {
+                      if (!_formKey.currentState!.validate()) return;
+
+                      setState(() => loading = true);
+                      String? res = await AuthService().register(
+                        emailController.text.trim(),
+                        passwordController.text.trim(),
+                        nameController.text.trim(),
+                        role,
+                      );
+                      setState(() => loading = false);
+
+                      if (res == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Registration successful! Please login.")),
                         );
-                        setState(() => loading = false);
-                        if (res == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Registration Successful! Please login.")));
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $res")));
-                        }
-                      },
-                      child: Text("Register"),
-                    )
-                  ],
-                ),
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => LoginScreen()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error: $res")),
+                        );
+                      }
+                    },
+                    child: Text("Register"),
+                  ),
+                  SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.pushReplacement(
+                        context, MaterialPageRoute(builder: (_) => LoginScreen())),
+                    child: Text("Already have an account? Login"),
+                  ),
+                  SizedBox(height: 30),
+                  Text(
+                    "© 2025 BazaarBarta",
+                    style: TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  )
+                ],
               ),
             ),
+          ),
+          if (loading)
+            Container(
+              color: Colors.black54,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        ],
+      ),
     );
   }
 }

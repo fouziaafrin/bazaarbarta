@@ -15,6 +15,19 @@ class AuthService {
     }
   }
 
+
+    /// Sends a password reset email to the given address
+  Future<String?> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return null; // success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // return error message
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   // Login for all roles
   Future<String?> login(String email, String password) async {
     try {
@@ -31,3 +44,4 @@ class AuthService {
 
   User? get currentUser => _auth.currentUser;
 }
+
